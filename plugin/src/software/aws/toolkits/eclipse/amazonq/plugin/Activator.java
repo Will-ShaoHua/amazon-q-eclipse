@@ -22,6 +22,7 @@ import software.aws.toolkits.eclipse.amazonq.util.CodeReferenceLoggingService;
 import software.aws.toolkits.eclipse.amazonq.util.DefaultCodeReferenceLoggingService;
 import software.aws.toolkits.eclipse.amazonq.util.LoggingService;
 import software.aws.toolkits.eclipse.amazonq.util.PluginLogger;
+import software.aws.toolkits.eclipse.amazonq.notifications.NotificationProcessor;
 import software.aws.toolkits.eclipse.amazonq.util.ThreadingUtils;
 import software.aws.toolkits.eclipse.amazonq.views.router.ViewRouter;
 import software.aws.toolkits.eclipse.workspace.WorkspaceChangeListener;
@@ -41,6 +42,7 @@ public class Activator extends AbstractUIPlugin {
     private final InlineChatEditorListener editorListener;
     private static WorkspaceChangeListener workspaceListener = WorkspaceChangeListener.getInstance();
     private static ActiveEditorChangeListener activeEditorListener = ActiveEditorChangeListener.getInstance();
+    private static NotificationProcessor notificationProcessor;
 
     public Activator() {
         super();
@@ -59,6 +61,8 @@ public class Activator extends AbstractUIPlugin {
         editorListener.initialize();
         workspaceListener.start();
         activeEditorListener.initialize();
+        notificationProcessor = new NotificationProcessor();
+        notificationProcessor.start();
     }
 
     @Override
@@ -66,6 +70,9 @@ public class Activator extends AbstractUIPlugin {
         AmazonQBrowserProvider.getInstance().dispose();
         super.stop(context);
         plugin = null;
+        if (notificationProcessor != null) {
+            notificationProcessor.stop();
+        }
         workspaceListener.stop();
         activeEditorListener.stop();
         ThreadingUtils.shutdown();
